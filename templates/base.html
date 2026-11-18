@@ -1,0 +1,828 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Management System</title>
+
+    <script>
+        // Apply saved theme BEFORE paint to avoid flash of wrong theme
+        (function() {
+            var saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+
+    <style>
+        /* 1. GLOBAL LAYOUT (Sticky Footer Fix) */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: background 0.3s ease, color 0.3s ease;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        main {
+            flex: 1 0 auto; /* Pushes footer to the very bottom */
+            padding: 0; /* REMOVED padding to eliminate white gaps around dark content */
+            background-color: var(--bg-color);
+        }
+
+        footer {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 20px;
+            background: #222;
+            color: white;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* 2. THEME VARIABLES */
+        :root {
+            --bg-color: #050505;
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-sub: rgba(255,255,255,0.6);
+            --border-color: #333333;
+            --accent-red: #ff4d4d;
+            --nav-bg: #050505;
+            --input-bg: rgba(255,255,255,0.05);
+            --section-bg: #0a0a0a;
+        }
+        [data-theme="dark"] {
+            --bg-color: #050505;
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-sub: rgba(255,255,255,0.6);
+            --border-color: #333333;
+            --accent-red: #ff4d4d;
+            --nav-bg: #050505;
+            --input-bg: rgba(255,255,255,0.05);
+            --section-bg: #0a0a0a;
+        }
+        [data-theme="light"] {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-main: #1a1a1a;
+            --text-sub: rgba(0,0,0,0.55);
+            --border-color: #e0e0e0;
+            --accent-red: #b30000;
+            --nav-bg: #ffffff;
+            --input-bg: #ffffff;
+            --section-bg: #f0f0f0;
+        }
+
+        /* =====================================================
+           LIGHT MODE — Global overrides
+           These override hardcoded dark colours in every template.
+        ===================================================== */
+
+        /* Page backgrounds */
+        [data-theme="light"] body,
+        [data-theme="light"] main { background-color: #f5f5f5 !important; }
+
+        /* Home / Search hero sections */
+        [data-theme="light"] .home-wrapper,
+        [data-theme="light"] #waves-container,
+        [data-theme="light"] .search-page-wrapper,
+        [data-theme="light"] .search-hero {
+            background: linear-gradient(160deg, #fff0f0 0%, #f5f5f5 100%) !important;
+            color: #1a1a1a !important;
+        }
+
+        /* Search container glass card */
+        [data-theme="light"] .search-container {
+            background: rgba(255,255,255,0.85) !important;
+            border-color: rgba(179,0,0,0.15) !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+        }
+        [data-theme="light"] .search-container:hover {
+            box-shadow: 0 18px 50px rgba(0,0,0,0.14) !important;
+        }
+
+        /* Hero headings and subtext */
+        [data-theme="light"] #waves-container h1,
+        [data-theme="light"] .search-hero h1 { color: #1a1a1a !important; text-shadow: none !important; }
+        [data-theme="light"] #waves-container p,
+        [data-theme="light"] .search-hero p  { color: #555 !important; }
+
+        /* Stats bar */
+        [data-theme="light"] [style*="background: linear-gradient(90deg, #050505"] {
+            background: linear-gradient(90deg, #fff0f0, #ffffff, #fff0f0) !important;
+            border-color: rgba(179,0,0,0.12) !important;
+        }
+
+        /* Donor cards */
+        [data-theme="light"] .donor-card {
+            background: #ffffff !important;
+            border-color: rgba(179,0,0,0.18) !important;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+            color: #1a1a1a !important;
+        }
+        [data-theme="light"] .dc-name  { color: #1a1a1a !important; }
+        [data-theme="light"] .dc-location { color: rgba(0,0,0,0.5) !important; background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.08) !important; }
+        [data-theme="light"] .dc-pending  { background: rgba(255,193,7,0.1) !important; }
+        [data-theme="light"] .dc-input {
+            background: #f8f8f8 !important;
+            border-color: rgba(179,0,0,0.2) !important;
+            color: #1a1a1a !important;
+        }
+        [data-theme="light"] .dc-input::placeholder { color: rgba(0,0,0,0.35) !important; }
+
+        /* Blood group bubble picker */
+        [data-theme="light"] .bg-bubble {
+            background: radial-gradient(110% 110% at 30% 30%, rgba(255,255,255,0.9), rgba(255,200,200,0.3), rgba(240,240,240,0.8)) !important;
+            border-color: rgba(179,0,0,0.3) !important;
+            color: #1a1a1a !important;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 10px rgba(0,0,0,0.1) !important;
+        }
+        [data-theme="light"] .bg-bubble.bg-selected {
+            background: radial-gradient(110% 110% at 30% 30%, rgba(255,150,150,0.9), #cc0000, #800000) !important;
+            color: #fff !important;
+        }
+        [data-theme="light"] .bg-picker-label { color: #b30000 !important; }
+
+        /* Inputs, selects, textareas globally */
+        [data-theme="light"] input,
+        [data-theme="light"] select,
+        [data-theme="light"] textarea {
+            background-color: #ffffff !important;
+            border-color: #d0d0d0 !important;
+            color: #1a1a1a !important;
+        }
+        [data-theme="light"] input::placeholder,
+        [data-theme="light"] textarea::placeholder { color: rgba(0,0,0,0.35) !important; }
+
+        /* Auth cards (login, signup) */
+        [data-theme="light"] .auth-card,
+        [data-theme="light"] .auth-card-unified,
+        [data-theme="light"] .enroll-card {
+            background: #ffffff !important;
+            border-color: #e0e0e0 !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+            color: #1a1a1a !important;
+        }
+
+        /* Enroll-select options */
+        [data-theme="light"] .enroll-select,
+        [data-theme="light"] .enroll-input {
+            background-color: #f8f8f8 !important;
+            border-color: #d0d0d0 !important;
+            color: #1a1a1a !important;
+        }
+        [data-theme="light"] .enroll-select option { background: #ffffff; color: #1a1a1a; }
+
+        /* Labels */
+        [data-theme="light"] label { color: #333 !important; }
+        [data-theme="light"] .form-label-small { color: #b30000 !important; }
+
+        /* home-search-input in light mode */
+        [data-theme="light"] .home-search-input {
+            background-color: #ffffff !important;
+            border-color: rgba(179,0,0,0.2) !important;
+            color: #1a1a1a !important;
+        }
+        [data-theme="light"] .home-search-input::placeholder { color: rgba(0,0,0,0.35) !important; }
+
+        /* Sent requests table */
+        [data-theme="light"] .auth-card-unified { background: #fff !important; }
+        [data-theme="light"] table {
+            background: #ffffff !important;
+            border-color: #e0e0e0 !important;
+            color: #1a1a1a !important;
+        }
+        [data-theme="light"] thead tr { border-color: #e0e0e0 !important; background: #f8f8f8 !important; }
+        [data-theme="light"] tbody tr { border-color: #f0f0f0 !important; color: #1a1a1a !important; }
+        [data-theme="light"] th, [data-theme="light"] td { color: #1a1a1a !important; }
+
+        /* Section titles on register page */
+        [data-theme="light"] .section-title { color: #b30000 !important; border-color: #e0e0e0 !important; }
+
+        /* Screening box */
+        [data-theme="light"] .screening-box { background: rgba(179,0,0,0.04) !important; border-color: rgba(179,0,0,0.12) !important; }
+        [data-theme="light"] .screening-box label { color: #333 !important; }
+
+        /* Welcome bar */
+        [data-theme="light"] .welcome-bar {
+            background: linear-gradient(90deg, #fff0f0 0%, #ffffff 50%, #fff0f0 100%) !important;
+            border-color: rgba(179,0,0,0.1) !important;
+        }
+        [data-theme="light"] .welcome-text { color: #444 !important; }
+
+        /* Footer */
+        [data-theme="light"] footer {
+            background: #1a1a1a !important;
+            color: #fff !important;
+        }
+
+        /* No-results / empty state */
+        [data-theme="light"] .no-results {
+            background: rgba(0,0,0,0.03) !important;
+            border-color: rgba(179,0,0,0.15) !important;
+            color: #555 !important;
+        }
+
+        /* 3. INPUTS & CARDS */
+        input, select, textarea {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-main) !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            outline: none !important;
+        }
+        input:focus, select:focus {
+            border-color: var(--accent-red) !important;
+            box-shadow: 0 0 8px rgba(179,0,0,0.3) !important;
+        }
+        .enroll-card, .search-card, .auth-card-unified, .donor-card {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        /* =====================================================
+           PREMIUM FLOATING BUBBLE NAVBAR
+        ===================================================== */
+
+        /* --- Global underline reset for ALL header links --- */
+        .header a,
+        .header a:link,
+        .header a:visited,
+        .header a:hover,
+        .header a:active,
+        .nav-links-container a,
+        .nav-links-container a:any-link {
+            text-decoration: none !important;
+        }
+
+        /* --- Header Shell --- */
+        .header {
+            background: linear-gradient(135deg, #050505 0%, #0e0000 60%, #050505 100%) !important;
+            border-bottom: 1px solid rgba(220, 0, 0, 0.25) !important;
+            box-shadow:
+                0 4px 40px rgba(0,0,0,0.8),
+                0 1px 0 rgba(255,60,60,0.15) !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1000 !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        /* Red scan-line glow at bottom edge */
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,30,30,0.6) 30%,
+                rgba(255,80,80,0.9) 50%,
+                rgba(255,30,30,0.6) 70%,
+                transparent 100%);
+            animation: nav-scanline 4s ease-in-out infinite;
+        }
+        @keyframes nav-scanline {
+            0%,100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* --- Brand Logo --- */
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none !important;
+            flex-shrink: 0;
+        }
+        .nav-brand-icon {
+            font-size: 26px;
+            filter: drop-shadow(0 0 8px rgba(255,0,0,0.8));
+            animation: brand-pulse 2.5s ease-in-out infinite;
+        }
+        @keyframes brand-pulse {
+            0%,100% { filter: drop-shadow(0 0 6px rgba(255,0,0,0.7)); }
+            50%      { filter: drop-shadow(0 0 16px rgba(255,60,60,1)); }
+        }
+        .nav-brand-text {
+            font-size: 22px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        .nav-brand-text span {
+            background: linear-gradient(135deg, #ff3333, #ff8800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* --- Nav Links Container --- */
+        .nav-links-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        /* ---- BASE BUBBLE BUTTON ---- */
+        .nav-btn {
+            position: relative;
+            color: rgba(255,255,255,0.78);
+            text-decoration: none !important;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 7px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(8px);
+            transition: all 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        /* Inner shimmer layer */
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50px;
+            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.12) 0%, transparent 65%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+        .nav-btn:hover::before { opacity: 1; }
+
+        /* Hover — red bubble glow */
+        .nav-btn:hover {
+            color: #ffffff;
+            background: rgba(200, 0, 0, 0.18);
+            border-color: rgba(255, 50, 50, 0.55);
+            box-shadow:
+                0 0 16px rgba(255, 30, 30, 0.35),
+                0 4px 18px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,100,100,0.15);
+            transform: translateY(-3px) scale(1.04);
+        }
+
+        /* ---- ACTIVE (Dashboard / Admin) ---- */
+        .nav-btn.btn-active {
+            color: #ff6b6b;
+            background: rgba(180, 0, 0, 0.2);
+            border-color: rgba(255, 60, 60, 0.45);
+            box-shadow:
+                0 0 12px rgba(255,30,30,0.25),
+                inset 0 1px 0 rgba(255,80,80,0.12);
+        }
+        .nav-btn.btn-active:hover {
+            color: #fff;
+            background: rgba(200, 0, 0, 0.3);
+            border-color: rgba(255,80,80,0.7);
+            box-shadow:
+                0 0 22px rgba(255,40,40,0.5),
+                0 6px 20px rgba(0,0,0,0.5);
+            transform: translateY(-3px) scale(1.05);
+        }
+        /* Tiny pulsing dot for active items */
+        .nav-btn.btn-active::after {
+            content: '';
+            display: inline-block;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: #ff4444;
+            margin-left: 5px;
+            animation: active-dot 1.8s ease-in-out infinite;
+            box-shadow: 0 0 6px rgba(255,60,60,0.8);
+        }
+        @keyframes active-dot {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.6); }
+        }
+
+        /* ---- SIGN UP / CTA bubble ---- */
+        .nav-btn.btn-signup {
+            color: #0a0a0a;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            border-color: rgba(255,80,80,0.5);
+            box-shadow:
+                0 0 18px rgba(255,30,30,0.4),
+                0 4px 12px rgba(0,0,0,0.5);
+        }
+        .nav-btn.btn-signup:hover {
+            background: linear-gradient(135deg, #ff6666 0%, #ff2020 100%);
+            color: #ffffff;
+            border-color: rgba(255,120,120,0.8);
+            box-shadow:
+                0 0 28px rgba(255,50,50,0.6),
+                0 6px 20px rgba(0,0,0,0.6);
+            transform: translateY(-4px) scale(1.06);
+        }
+
+        /* ---- LOGOUT button ---- */
+        .nav-btn-logout {
+            background: rgba(139,0,0,0.15);
+            border-color: rgba(180,0,0,0.3);
+        }
+        .nav-btn-logout:hover {
+            background: rgba(180,0,0,0.3);
+            border-color: rgba(255,40,40,0.6);
+            box-shadow: 0 0 18px rgba(200,0,0,0.4), 0 4px 14px rgba(0,0,0,0.5);
+        }
+
+        /* ---- Divider dot ---- */
+        .nav-divider {
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: rgba(255,60,60,0.4);
+            margin: 0 2px;
+            flex-shrink: 0;
+        }
+
+        /* ---- SETTINGS DROPDOWN ---- */
+        .settings-dropdown {
+            position: relative;
+            display: inline-block;
+            margin-left: 4px;
+        }
+        .settings-btn {
+            color: rgba(255,255,255,0.75);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(8px);
+            transition: all 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        .settings-dropdown:hover .settings-btn {
+            color: #fff;
+            background: rgba(200,0,0,0.18);
+            border-color: rgba(255,50,50,0.5);
+            box-shadow: 0 0 16px rgba(255,30,30,0.3), 0 4px 14px rgba(0,0,0,0.5);
+            transform: translateY(-3px) scale(1.04);
+        }
+        .settings-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            background: linear-gradient(160deg, #130000 0%, #0d0000 100%);
+            min-width: 180px;
+            box-shadow:
+                0 20px 50px rgba(0,0,0,0.8),
+                0 0 0 1px rgba(255,40,40,0.2);
+            z-index: 2000;
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid rgba(180,0,0,0.3);
+            backdrop-filter: blur(20px);
+            animation: dropdown-in 0.2s ease;
+        }
+        @keyframes dropdown-in {
+            from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        /* Keep visible while hovering content */
+        .settings-dropdown-content::before {
+            content: '';
+            position: absolute;
+            top: -12px; left: 0; right: 0;
+            height: 14px;
+            background: transparent;
+        }
+        .settings-dropdown:hover .settings-dropdown-content { display: block; }
+
+        /* Theme row inside dropdown */
+        .settings-theme-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .settings-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.55);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .settings-edit-link {
+            display: block;
+            color: rgba(255,120,120,0.9);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 7px 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            border: 1px solid rgba(180,0,0,0.25);
+            background: rgba(180,0,0,0.08);
+            transition: all 0.2s ease;
+        }
+        .settings-edit-link:hover {
+            background: rgba(200,0,0,0.2);
+            color: #fff;
+            border-color: rgba(255,60,60,0.5);
+            box-shadow: 0 0 10px rgba(200,0,0,0.3);
+        }
+
+        /* ---- THEME TOGGLE PILL ---- */
+        .theme-switch-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 22px;
+            position: relative;
+            width: 46px;
+        }
+        .theme-switch input { display: none; }
+        .slider {
+            background-color: rgba(255,255,255,0.15);
+            bottom: 0; cursor: pointer; left: 0;
+            position: absolute; right: 0; top: 0;
+            transition: .3s; border-radius: 34px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .slider:before {
+            background-color: white;
+            bottom: 3px; content: '';
+            height: 14px; left: 3px;
+            position: absolute; transition: .3s;
+            width: 14px; border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        }
+        input:checked + .slider { background-color: rgba(255,60,60,0.5) !important; border-color: rgba(255,60,60,0.4); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        #theme-label-text {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* ---- PREMIUM MESSAGES (Django Alerts) ---- */
+        .message-toast-container {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        .message-toast {
+            pointer-events: auto;
+            min-width: 300px;
+            max-width: 450px;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 14px;
+            padding: 16px 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-left-width: 5px;
+            animation: toast-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: all 0.4s ease;
+        }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateX(50px) scale(0.9); }
+            to   { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .message-toast.toast-out {
+            opacity: 0;
+            transform: translateX(100px) scale(0.9);
+            margin-top: -60px; /* Collapse space */
+        }
+        .message-toast.success { border-left-color: #00ff88; box-shadow: 0 10px 30px rgba(0,255,136,0.15), 0 15px 35px rgba(0,0,0,0.6); }
+        .message-toast.error { border-left-color: #ff3333; box-shadow: 0 10px 30px rgba(255,51,51,0.15), 0 15px 35px rgba(0,0,0,0.6); }
+        .message-toast.info { border-left-color: #33ccff; }
+        .message-toast .toast-icon { font-size: 20px; }
+        .message-toast .toast-content { font-size: 0.9rem; font-weight: 600; flex: 1; }
+        .toast-close { cursor: pointer; opacity: 0.5; font-size: 18px; line-height: 1; transition: opacity 0.2s; }
+        .toast-close:hover { opacity: 1; }
+    </style>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+<header class="header" style="padding: 12px 0; color: white; width: 100%;">
+    <nav style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 32px; box-sizing: border-box; gap: 16px;">
+
+        <!-- Brand Logo -->
+        <a href="{% url 'index' %}" class="nav-brand">
+            <span class="nav-brand-icon">🩸</span>
+            <span class="nav-brand-text">Blood <span>Bank</span></span>
+        </a>
+
+        <!-- Navigation Bubble Buttons -->
+        <div class="nav-links-container">
+            <a href="{% url 'index' %}" class="nav-btn">🏠 Home</a>
+            <a href="{% url 'about' %}" class="nav-btn">💡 About</a>
+            <a href="{% url 'search_blood' %}" class="nav-btn">🔍 Search Donor</a>
+
+            {% if user.is_authenticated %}
+            <span class="nav-divider"></span>
+            {% if user.is_superuser %}
+            <a href="{% url 'admin_dashboard' %}" class="nav-btn btn-active">🛡️ Admin</a>
+            {% endif %}
+            <a href="{% url 'my_sent_requests' %}" class="nav-btn">📋 Requests</a>
+
+            {% if user.donor %}
+            <a href="{% url 'donor_dashboard' %}" class="nav-btn btn-active">📊 Dashboard</a>
+            {% else %}
+            <a href="{% url 'register' %}" class="nav-btn">❤️ Become a Donor</a>
+            {% endif %}
+
+            <span class="nav-divider"></span>
+            <form action="{% url 'logout' %}" method="post" style="display: inline; margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="nav-btn nav-btn-logout" style="cursor: pointer; font-family: inherit;">
+                    🚪 Logout
+                </button>
+            </form>
+            {% else %}
+            <span class="nav-divider"></span>
+            <a href="{% url 'login' %}" class="nav-btn">🔑 Login</a>
+            <a href="{% url 'signup' %}" class="nav-btn btn-signup">✨ Sign Up</a>
+            {% endif %}
+
+            <!-- Settings Dropdown -->
+            <div class="settings-dropdown">
+                <span class="settings-btn">⚙️ Settings ▾</span>
+                <div class="settings-dropdown-content">
+                    <div class="settings-theme-row">
+                        <span class="settings-label">🌙 Theme</span>
+                        <div class="theme-switch-container">
+                            <label class="theme-switch" for="theme-checkbox">
+                                <input type="checkbox" id="theme-checkbox" style="display:none;"/>
+                                <div class="slider"></div>
+                            </label>
+                        </div>
+                    </div>
+                    {% if user.is_authenticated and user.donor %}
+                    <a href="{% url 'edit_profile' %}" class="settings-edit-link">✏️ Edit Profile</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+{% if user.is_authenticated %}
+<div class="welcome-bar">
+    <div class="welcome-content">
+        <span class="welcome-icon">👋</span>
+        <span class="welcome-text">Welcome back, <span class="username">{{ user.username|title }}</span>!</span>
+    </div>
+</div>
+
+<style>
+/* ---- PREMIUM WELCOME BAR ---- */
+.welcome-bar {
+    width: 100%;
+    background: linear-gradient(90deg, rgba(20, 0, 0, 0.8) 0%, rgba(10, 10, 10, 0.9) 50%, rgba(20, 0, 0, 0.8) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(255, 60, 60, 0.15);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 999;
+}
+/* Subtle top glow line to separate from nav */
+.welcome-bar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 60, 60, 0.3), transparent);
+}
+.welcome-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 8px 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.welcome-icon {
+    font-size: 18px;
+    animation: wave 2.5s infinite;
+    transform-origin: 70% 70%;
+}
+@keyframes wave {
+    0% { transform: rotate( 0.0deg) }
+    10% { transform: rotate(14.0deg) }
+    20% { transform: rotate(-8.0deg) }
+    30% { transform: rotate(14.0deg) }
+    40% { transform: rotate(-4.0deg) }
+    50% { transform: rotate(10.0deg) }
+    60% { transform: rotate( 0.0deg) }
+    100% { transform: rotate( 0.0deg) }
+}
+.welcome-text {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.2px;
+}
+.welcome-text .username {
+    color: #ff4d4d;
+    font-weight: 800;
+    text-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+}
+</style>
+{% endif %}
+
+<main>
+    {% if messages %}
+    <div class="message-toast-container">
+        {% for message in messages %}
+        <div class="message-toast {{ message.tags }}">
+            <span class="toast-icon">
+                {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}🚨{% else %}ℹ️{% endif %}
+            </span>
+            <div class="toast-content">{{ message }}</div>
+            <span class="toast-close" onclick="this.parentElement.classList.add('toast-out')">×</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer>
+    <p>&copy; 2026 Blood Bank Management System</p>
+</footer>
+
+<script>
+    const themeCheckbox = document.getElementById('theme-checkbox');
+    const htmlElement   = document.documentElement;
+
+    // 1. Apply saved theme on load (attribute already set in <head> script,
+    //    but we also need to sync the checkbox UI state)
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    htmlElement.setAttribute('data-theme', savedTheme);
+    if (themeCheckbox) themeCheckbox.checked = (savedTheme === 'dark');
+
+    // 2. Listen for toggle changes
+    if (themeCheckbox) {
+        themeCheckbox.addEventListener('change', function() {
+            const newTheme = this.checked ? 'dark' : 'light';
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+
+    // 3. Auto-dismiss messages
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.message-toast');
+        toasts.forEach(toast => {
+            setTimeout(() => {
+                toast.classList.add('toast-out');
+                setTimeout(() => { toast.remove(); }, 500);
+            }, 4000);
+        });
+    });
+</script>
+</body>
+</html>

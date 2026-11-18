@@ -1,0 +1,480 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* ===== PAGE WRAPPER ===== */
+    .search-page-wrapper {
+        background-color: #050505;
+        min-height: 100vh;
+        color: #ffffff;
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    }
+
+    /* ===== HERO SECTION ===== */
+    .search-hero {
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(ellipse at center, #1a0000 0%, #000000 100%);
+        padding: 80px 20px 60px;
+        text-align: center;
+    }
+
+    /* ===== GLASS SEARCH CONTAINER ===== */
+    .search-container {
+        background: rgba(10, 10, 10, 0.55) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 38px;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 0, 0, 0.15);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,0,0,0.05);
+        max-width: 1000px;
+        margin: 0 auto;
+        transition: transform 0.5s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.5s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .search-container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,0,0,0.5), transparent);
+    }
+    .search-container:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 40px 80px rgba(0,0,0,0.9), inset 0 0 30px rgba(255,0,0,0.08);
+    }
+
+    /* ===== FORM LABELS ===== */
+    .form-label-small {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #ff4d4d;
+        display: block;
+        text-align: left;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+
+    /* ===== TEXT INPUTS ===== */
+    .home-search-input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 12px;
+        outline: none;
+        box-sizing: border-box;
+        font-size: 1rem;
+        background-color: rgba(20,20,20,0.7) !important;
+        border: 1px solid rgba(255,77,77,0.2) !important;
+        color: #ffffff !important;
+        transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .home-search-input::placeholder { color: rgba(255,255,255,0.4) !important; }
+    .home-search-input:focus,
+    .home-search-input:hover {
+        background-color: rgba(30,30,30,0.9) !important;
+        border: 1px solid #ff0000 !important;
+        box-shadow: 0 0 15px rgba(255,0,0,0.3);
+        transform: translateY(-2px);
+    }
+
+    /* ===== FIND BUTTON ===== */
+    .find-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #ff0000, #8b0000);
+        color: white;
+        border: 1px solid rgba(255,0,0,0.4);
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        box-shadow: 0 10px 25px rgba(255,0,0,0.3);
+        position: relative;
+        overflow: hidden;
+        margin-top: 24px;
+    }
+    .find-btn:hover {
+        transform: scale(1.03) translateY(-2px);
+        box-shadow: 0 15px 35px rgba(255,0,0,0.5);
+    }
+    .find-btn::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .find-btn:hover::after { opacity: 1; }
+
+    /* ===== BLOOD GROUP FLOATING BUBBLES (Vertical Grid & Glassy Effect) ===== */
+    .bg-picker-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #ff4d4d;
+        display: block;
+        text-align: left;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+    .bg-bubbles-wrap {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        justify-items: center;
+        align-items: center;
+    }
+    .bg-bubble {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%; /* Perfect circle bubble */
+        border: 1px solid rgba(255, 60, 60, 0.4);
+        background: radial-gradient(110% 110% at 30% 30%, rgba(255,255,255,0.1), rgba(255,0,0,0.05), rgba(10,0,0,0.8));
+        box-shadow: 
+            inset 0 4px 6px rgba(255, 255, 255, 0.2), 
+            inset 0 -4px 6px rgba(0, 0, 0, 0.5),
+            0 5px 15px rgba(0, 0, 0, 0.4);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.85rem;
+        font-weight: 800;
+        font-family: 'Inter', 'Segoe UI', serif;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        user-select: none;
+        flex-shrink: 0;
+        animation: float-bubble 4s ease-in-out infinite;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Staggered animation delays for a natural floating effect */
+    .bg-bubble:nth-child(1) { animation-delay: 0s; }
+    .bg-bubble:nth-child(2) { animation-delay: 0.2s; }
+    .bg-bubble:nth-child(3) { animation-delay: 0.4s; }
+    .bg-bubble:nth-child(4) { animation-delay: 0.6s; }
+    .bg-bubble:nth-child(5) { animation-delay: 0.8s; }
+    .bg-bubble:nth-child(6) { animation-delay: 1.0s; }
+    .bg-bubble:nth-child(7) { animation-delay: 1.2s; }
+    .bg-bubble:nth-child(8) { animation-delay: 1.4s; }
+    .bg-bubble:nth-child(9) { animation-delay: 1.6s; }
+
+    @keyframes float-bubble {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-6px) scale(1.02); }
+    }
+
+    /* Inner bubble reflection */
+    .bg-bubble::before {
+        content: '';
+        position: absolute;
+        width: 22px; height: 12px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        top: 6px; left: 12px;
+        transform: rotate(-25deg);
+        filter: blur(1px);
+    }
+
+    .bg-bubble:hover {
+        border-color: rgba(255, 100, 100, 0.8);
+        background: radial-gradient(110% 110% at 30% 30%, rgba(255,255,255,0.2), rgba(255,0,0,0.1), rgba(150,0,0,0.6));
+        color: #ffffff;
+        box-shadow: 
+            inset 0 4px 6px rgba(255, 255, 255, 0.3), 
+            inset 0 -4px 6px rgba(0, 0, 0, 0.5),
+            0 10px 25px rgba(255, 30, 30, 0.4);
+    }
+    .bg-bubble.bg-selected {
+        background: radial-gradient(110% 110% at 30% 30%, rgba(255,200,200,0.8), #ff0000, #880000);
+        border-color: rgba(255, 150, 150, 0.9);
+        color: #ffffff;
+        box-shadow: 
+            inset 0 4px 10px rgba(255, 255, 255, 0.5), 
+            inset 0 -4px 10px rgba(100, 0, 0, 0.8),
+            0 0 20px rgba(255, 0, 0, 0.6),
+            0 10px 30px rgba(255, 0, 0, 0.4);
+    }
+    .bg-bubble span {
+        position: relative;
+        z-index: 2;
+        letter-spacing: 0.5px;
+    }
+
+    /* ===== EMERGENCY TAG ===== */
+    .emergency-dot { height: 8px; width: 8px; background-color: #ff0000; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse-red 1.5s infinite; }
+    @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); } }
+    .emergency-tag { display: inline-flex; align-items: center; background: rgba(255,0,0,0.1); color: #ff6666; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255,0,0,0.2); margin-bottom: 20px; letter-spacing: 1px; }
+
+    /* ===== RESULTS GRID ===== */
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 50px auto 60px;
+        padding: 0 20px;
+    }
+    .no-results {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px;
+        color: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.03);
+        border-radius: 20px;
+        border: 1px dashed rgba(255,0,0,0.2);
+    }
+    .no-results .no-icon { font-size: 4rem; margin-bottom: 16px; }
+    .no-results h3 { color: #fff; margin: 0 0 10px; }
+    .no-results a {
+        color: #ff4d4d;
+        text-decoration: none !important;
+        font-weight: 700;
+        display: inline-block;
+        margin-top: 16px;
+        border: 1px solid rgba(255,60,60,0.3);
+        padding: 8px 20px;
+        border-radius: 30px;
+        transition: all 0.2s;
+    }
+    .no-results a:hover { background: rgba(200,0,0,0.15); }
+</style>
+
+<div class="search-page-wrapper">
+
+    <!-- ===== HERO / SEARCH SECTION ===== -->
+    <div class="search-hero" id="search-waves-container">
+
+        <div style="position: relative; z-index: 2; pointer-events: none;">
+            <div class="emergency-tag" style="pointer-events: auto;">
+                <span class="emergency-dot"></span> Donor Search
+            </div>
+
+            <h1 style="font-size: 3.5rem; font-weight: 900; margin-bottom: 14px; color: #fff;
+                        text-shadow: 0 0 30px rgba(255,0,0,0.4); letter-spacing: -1px;">
+                Find a <span style="background: linear-gradient(to right, #ff3333, #ff0000);
+                                    -webkit-background-clip: text; color: transparent;">Life-Saver</span>
+            </h1>
+            <p style="font-size: 1.1rem; opacity: 0.75; max-width: 600px; margin: 0 auto 40px;
+                       color: #cccccc; font-weight: 300;">
+                Search verified blood donors in your city instantly.
+            </p>
+
+            <!-- ===== SEARCH FORM ===== -->
+            <div class="search-container" style="pointer-events: auto;">
+                <form method="GET" action="{% url 'search_blood' %}"
+                      style="display: grid;
+                             grid-template-columns: auto 1fr;
+                             gap: 50px;
+                             align-items: center;">
+
+                    <!-- ===== BLOOD GROUP FLOATING BUBBLES (Vertical Grid) ===== -->
+                    <div style="border-right: 1px solid rgba(255, 0, 0, 0.2); padding-right: 50px;">
+                        <span class="bg-picker-label">🩸 Blood Group</span>
+                        <input type="hidden" name="blood_group" id="bg-hidden" value="{{ query.blood_group|default:'' }}">
+                        <!-- 3x3 array to give a nice vertical block shape -->
+                        <div class="bg-bubbles-wrap" id="bg-bubbles">
+                            <button type="button" class="bg-bubble" data-val=""><span>ALL</span></button>
+                            <button type="button" class="bg-bubble" data-val="A+"><span>A+</span></button>
+                            <button type="button" class="bg-bubble" data-val="A−"><span>A−</span></button>
+                            <button type="button" class="bg-bubble" data-val="B+"><span>B+</span></button>
+                            <button type="button" class="bg-bubble" data-val="B−"><span>B−</span></button>
+                            <button type="button" class="bg-bubble" data-val="O+"><span>O+</span></button>
+                            <button type="button" class="bg-bubble" data-val="O−"><span>O−</span></button>
+                            <button type="button" class="bg-bubble" data-val="AB+"><span>AB+</span></button>
+                            <button type="button" class="bg-bubble" data-val="AB−"><span>AB−</span></button>
+                        </div>
+                    </div>
+
+                    <!-- ===== Right Side: Location & Submit ===== -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <!-- District -->
+                        <div>
+                            <label class="form-label-small">District</label>
+                            <input type="text" name="district"
+                                   value="{{ query.district|default:'' }}"
+                                   placeholder="e.g. Kottayam"
+                                   class="home-search-input">
+                        </div>
+
+                        <!-- City -->
+                        <div>
+                            <label class="form-label-small">City</label>
+                            <input type="text" name="city"
+                                   value="{{ query.city|default:'' }}"
+                                   placeholder="e.g. Pala"
+                                   class="home-search-input">
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" class="find-btn" style="margin-top: 10px;">
+                            <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2.5"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                Search
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESULTS ===== -->
+    {% if searched %}
+    <div class="results-grid">
+        {% for donor in results %}
+            {% include 'donor_card.html' %}
+        {% empty %}
+            <div class="no-results">
+                <div class="no-icon">🔎</div>
+                <h3>No Donors Found</h3>
+                <p>Try expanding your search to "ALL" groups or a nearby district.</p>
+                <a href="{% url 'search_blood' %}">Clear all filters</a>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div><!-- /search-page-wrapper -->
+
+<script>
+/* ===== BLOOD RAIN CANVAS (identical to home page) ===== */
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('search-waves-container');
+    if (!container) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.zIndex = '1';
+    canvas.style.pointerEvents = 'none';
+    container.insertBefore(canvas, container.firstChild);
+
+    const ctx = canvas.getContext('2d');
+    let width, height, drops = [];
+
+    function resize() {
+        width  = container.offsetWidth;
+        height = container.offsetHeight;
+        canvas.width  = width;
+        canvas.height = height;
+        const target = Math.floor(width / 3.5);
+        if (drops.length < target) {
+            for (let i = drops.length; i < target; i++) createDrop(true);
+        } else {
+            drops.splice(target);
+        }
+    }
+
+    function createDrop(randomY) {
+        const z = Math.random();
+        const drop = {
+            x: Math.random() * width,
+            y: randomY ? Math.random() * height : -100,
+            z: z,
+            speed: 3 + z * 10,
+            length: 15 + z * 35,
+            thickness: 0.6 + z * 2.8,
+            opacity: 0.2 + z * 0.8,
+            color: Math.random() > 0.8 ? '255,60,60' : '200,0,0'
+        };
+        if (randomY) { drops.push(drop); } else { return drop; }
+    }
+
+    window.addEventListener('resize', resize);
+    width  = container.offsetWidth;
+    height = container.offsetHeight;
+    canvas.width  = width;
+    canvas.height = height;
+    for (let i = 0; i < Math.floor(width / 3.5); i++) createDrop(true);
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = 'rgba(255,0,0,0.4)';
+        for (let i = 0; i < drops.length; i++) {
+            const d = drops[i];
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(d.x, d.y + d.length);
+            const g = ctx.createLinearGradient(d.x, d.y, d.x, d.y + d.length);
+            g.addColorStop(0, `rgba(${d.color},0)`);
+            g.addColorStop(1, `rgba(${d.color},${d.opacity})`);
+            ctx.strokeStyle = g;
+            ctx.lineWidth = d.thickness;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            d.y += d.speed;
+            if (d.y > height + 50) {
+                drops[i] = createDrop(false);
+                drops[i].x = Math.random() * width;
+            }
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+});
+
+/* ===== BLOOD GROUP BUBBLE PICKER ===== */
+(function () {
+    const bubbles = document.querySelectorAll('#bg-bubbles .bg-bubble');
+    const hidden  = document.getElementById('bg-hidden');
+
+    // Pre-select bubble that matches the current query value
+    const preSelected = hidden.value.trim();
+    bubbles.forEach(function (btn) {
+        const val = btn.dataset.val.trim();
+        if (val === preSelected || (preSelected === '' && val === '')) {
+            btn.classList.add('bg-selected');
+        }
+    });
+    // If nothing pre-selected, default to ALL
+    const anySelected = document.querySelector('#bg-bubbles .bg-bubble.bg-selected');
+    if (!anySelected) {
+        document.querySelector('#bg-bubbles .bg-bubble[data-val=""]').classList.add('bg-selected');
+    }
+
+    bubbles.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            bubbles.forEach(function (b) { b.classList.remove('bg-selected'); });
+            btn.classList.add('bg-selected');
+            hidden.value = btn.dataset.val;
+        });
+    });
+})();
+
+/* ===== WHATSAPP ===== */
+function sendWhatsApp(event, donorId, phone, donorName, bloodGroup) {
+    const hospitalField = document.getElementById('hosp_' + donorId);
+    if (!hospitalField) return;
+    const hospitalName = hospitalField.value.trim();
+    if (!hospitalName) {
+        alert('Please enter the Hospital Name first!');
+        event.preventDefault();
+        return;
+    }
+    let cleanBloodGroup = decodeURIComponent(bloodGroup);
+    const mapLink = 'https://www.google.com/maps/search/' + encodeURIComponent(hospitalName);
+    const message = `🚨 *URGENT BLOOD REQUEST*\n\nHello ${donorName},\n\nWe need *${cleanBloodGroup}* blood urgently at *${hospitalName}*.\n\n📍 *Location:* ${mapLink}\n\nAre you available to help?`;
+    window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    event.preventDefault();
+}
+</script>
+{% endblock %}

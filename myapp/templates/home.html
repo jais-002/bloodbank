@@ -1,0 +1,847 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .home-wrapper {
+        background-color: #050505 !important;
+        min-height: 100vh;
+        color: #ffffff;
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    }
+
+    .home-search-input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 12px;
+        outline: none;
+        box-sizing: border-box;
+        font-size: 1rem;
+        background-color: rgba(20, 20, 20, 0.7) !important;
+        border: 1px solid rgba(255, 77, 77, 0.2) !important;
+        color: #ffffff !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .home-search-input::placeholder {
+        color: rgba(255, 255, 255, 0.4) !important;
+    }
+    .home-search-input:focus, .home-search-input:hover {
+        background-color: rgba(30, 30, 30, 0.9) !important;
+        border: 1px solid #ff0000 !important;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Sleek dark glass container */
+    .search-container {
+        background: rgba(10, 10, 10, 0.5) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 35px;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 0, 0, 0.15);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 0, 0, 0.05);
+        max-width: 1000px;
+        margin: 0 auto;
+        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.5s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .search-container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.5), transparent);
+    }
+    .search-container:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(255, 0, 0, 0.1);
+    }
+
+    .form-label-small {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #ff4d4d;
+        display: block;
+        text-align: left;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+
+    /* Emergency Animation */
+    .emergency-dot { height: 8px; width: 8px; background-color: #ff0000; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse-red 1.5s infinite; }
+    @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
+    .emergency-tag { display: inline-flex; align-items: center; background: rgba(255, 0, 0, 0.1); color: #ff6666; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255, 0, 0, 0.2); margin-bottom: 20px; letter-spacing: 1px;}
+    
+    .find-btn {
+        padding: 15px; 
+        background: linear-gradient(135deg, #ff0000, #8b0000); 
+        color: white; 
+        border: 1px solid rgba(255, 0, 0, 0.4); 
+        border-radius: 12px; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        letter-spacing: 2px; 
+        cursor: pointer; 
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    .find-btn:hover {
+        transform: scale(1.05) translateY(-2px); 
+        box-shadow: 0 15px 35px rgba(255, 0, 0, 0.5);
+    }
+    .find-btn::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .find-btn:hover::after {
+        opacity: 1;
+    }
+
+    /* ---- Blood Group Floating Bubbles (Vertical Grid & Glassy Effect) ---- */
+    .bg-picker-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #ff4d4d;
+        display: block;
+        text-align: left;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+    .bg-bubbles-wrap {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        justify-items: center;
+        align-items: center;
+    }
+    .bg-bubble {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%; /* Perfect circle bubble */
+        border: 1px solid rgba(255, 60, 60, 0.4);
+        background: radial-gradient(110% 110% at 30% 30%, rgba(255,255,255,0.1), rgba(255,0,0,0.05), rgba(10,0,0,0.8));
+        box-shadow: 
+            inset 0 4px 6px rgba(255, 255, 255, 0.2), 
+            inset 0 -4px 6px rgba(0, 0, 0, 0.5),
+            0 5px 15px rgba(0, 0, 0, 0.4);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.85rem;
+        font-weight: 800;
+        font-family: 'Inter', 'Segoe UI', serif;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        user-select: none;
+        flex-shrink: 0;
+        animation: float-bubble 4s ease-in-out infinite;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    /* Staggered animation delays for a natural floating effect */
+    .bg-bubble:nth-child(1) { animation-delay: 0s; }
+    .bg-bubble:nth-child(2) { animation-delay: 0.2s; }
+    .bg-bubble:nth-child(3) { animation-delay: 0.4s; }
+    .bg-bubble:nth-child(4) { animation-delay: 0.6s; }
+    .bg-bubble:nth-child(5) { animation-delay: 0.8s; }
+    .bg-bubble:nth-child(6) { animation-delay: 1.0s; }
+    .bg-bubble:nth-child(7) { animation-delay: 1.2s; }
+    .bg-bubble:nth-child(8) { animation-delay: 1.4s; }
+    .bg-bubble:nth-child(9) { animation-delay: 1.6s; }
+
+    @keyframes float-bubble {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-6px) scale(1.02); }
+    }
+
+    /* Inner bubble reflection */
+    .bg-bubble::before {
+        content: '';
+        position: absolute;
+        width: 22px; height: 12px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        top: 6px; left: 12px;
+        transform: rotate(-25deg);
+        filter: blur(1px);
+    }
+
+    .bg-bubble:hover {
+        border-color: rgba(255, 100, 100, 0.8);
+        background: radial-gradient(110% 110% at 30% 30%, rgba(255,255,255,0.2), rgba(255,0,0,0.1), rgba(150,0,0,0.6));
+        color: #ffffff;
+        box-shadow: 
+            inset 0 4px 6px rgba(255, 255, 255, 0.3), 
+            inset 0 -4px 6px rgba(0, 0, 0, 0.5),
+            0 10px 25px rgba(255, 30, 30, 0.4);
+    }
+
+    .bg-bubble.bg-selected {
+        background: radial-gradient(110% 110% at 30% 30%, rgba(255,200,200,0.8), #ff0000, #880000);
+        border-color: rgba(255, 150, 150, 0.9);
+        color: #ffffff;
+        box-shadow: 
+            inset 0 4px 10px rgba(255, 255, 255, 0.5), 
+            inset 0 -4px 10px rgba(100, 0, 0, 0.8),
+            0 0 20px rgba(255, 0, 0, 0.6),
+            0 10px 30px rgba(255, 0, 0, 0.4);
+    }
+
+    .bg-bubble span {
+        position: relative;
+        z-index: 2;
+        letter-spacing: 0.5px;
+    }
+
+    /* ================================================================
+       INFO SECTIONS — shared layout
+    ================================================================ */
+    .info-section-wrapper {
+        background: var(--bg-color, #050505);
+        padding: 80px 20px;
+        position: relative;
+        z-index: 2;
+        border-top: 1px solid rgba(255,0,0,0.08);
+    }
+    .info-section-inner     { max-width: 1100px; margin: 0 auto; }
+    .info-section-header    { text-align: center; margin-bottom: 52px; }
+    .info-accent-bar {
+        display: inline-block; width: 48px; height: 4px;
+        background: linear-gradient(90deg, #b30000, #ff4444);
+        border-radius: 2px; margin-bottom: 18px;
+    }
+    .info-section-title {
+        color: var(--text-main, #fff);
+        font-size: clamp(1.7rem, 3vw, 2.4rem);
+        font-weight: 900; margin: 0 0 12px;
+        letter-spacing: -0.5px;
+    }
+    .info-section-sub {
+        color: var(--text-sub, rgba(255,255,255,0.55));
+        font-size: 1rem; margin: 0;
+    }
+
+    /* ---- Why Donate grid ---- */
+    .why-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 24px;
+    }
+    .why-card {
+        background: var(--card-bg, #1a1a1a);
+        border: 1px solid rgba(255,0,0,0.12);
+        border-radius: 18px;
+        padding: 32px 28px;
+        text-align: center;
+        transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275),
+                    box-shadow 0.3s ease,
+                    border-color 0.3s ease;
+    }
+    .why-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(255,0,0,0.35);
+        box-shadow: 0 16px 40px rgba(200,0,0,0.18);
+    }
+    .why-icon  { font-size: 2.8rem; margin-bottom: 16px; }
+    .why-title {
+        color: var(--text-main, #fff);
+        font-size: 1.1rem; font-weight: 800;
+        margin: 0 0 12px;
+    }
+    .why-body  {
+        color: var(--text-sub, rgba(255,255,255,0.55));
+        font-size: 0.88rem; line-height: 1.7; margin: 0;
+    }
+
+    /* ---- Blood Compatibility grid ---- */
+    .compat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 28px;
+    }
+    .compat-card {
+        background: var(--card-bg, #1a1a1a);
+        border: 1px solid rgba(255,0,0,0.12);
+        border-radius: 14px;
+        padding: 24px 20px;
+        text-align: center;
+        transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .compat-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255,0,0,0.35);
+    }
+    .compat-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #8b0000, #ff2222);
+        color: #fff; font-weight: 900; font-size: 1.3rem;
+        padding: 6px 18px; border-radius: 30px;
+        margin-bottom: 16px;
+        box-shadow: 0 0 14px rgba(200,0,0,0.4);
+    }
+    .compat-row { margin-bottom: 10px; }
+    .compat-label {
+        display: block; font-size: 0.68rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 1px;
+        color: var(--text-sub, rgba(255,255,255,0.45));
+        margin-bottom: 3px;
+    }
+    .compat-value {
+        font-size: 0.82rem; font-weight: 700;
+        color: var(--text-main, #fff);
+    }
+    .compat-value.give { color: #ff6666; }
+    .compat-value.recv { color: #66ccff; }
+    .compat-note {
+        text-align: center;
+        color: var(--text-sub, rgba(255,255,255,0.35));
+        font-size: 0.78rem; font-style: italic; margin: 0;
+    }
+
+    /* ---- About split ---- */
+    .about-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: start;
+    }
+    @media (max-width: 768px) { .about-split { grid-template-columns: 1fr; gap: 40px; } }
+
+    .about-eyebrow {
+        display: inline-block; font-size: 0.8rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 2px;
+        color: #ff6666; margin-bottom: 14px;
+    }
+    .about-heading {
+        color: var(--text-main, #fff);
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 900; line-height: 1.2;
+        margin: 0 0 24px;
+    }
+    .about-body {
+        color: var(--text-sub, rgba(255,255,255,0.6));
+        font-size: 0.95rem; line-height: 1.8;
+        margin: 0 0 16px;
+    }
+    .about-cta-btn {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 13px 32px;
+        background: linear-gradient(135deg, #b30000, #ff2020);
+        color: #fff; font-weight: 800; font-size: 0.9rem;
+        border-radius: 30px; text-decoration: none;
+        box-shadow: 0 6px 20px rgba(200,0,0,0.35);
+        transition: all 0.25s ease;
+        letter-spacing: 0.5px;
+    }
+    .about-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(255,0,0,0.45);
+        color: #fff;
+    }
+
+    .about-pillars-col { display: flex; flex-direction: column; gap: 16px; }
+    .pillar-card {
+        display: flex; align-items: flex-start; gap: 16px;
+        background: var(--card-bg, #1a1a1a);
+        border: 1px solid rgba(255,0,0,0.1);
+        border-radius: 14px; padding: 20px 22px;
+        transition: border-color 0.25s, transform 0.25s;
+    }
+    .pillar-card:hover { border-color: rgba(255,0,0,0.3); transform: translateX(4px); }
+    .pillar-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .pillar-title {
+        color: var(--text-main, #fff);
+        font-weight: 800; font-size: 0.95rem; margin: 0 0 5px;
+    }
+    .pillar-body {
+        color: var(--text-sub, rgba(255,255,255,0.5));
+        font-size: 0.82rem; line-height: 1.6; margin: 0;
+    }
+
+    /* ---- Eligibility grid ---- */
+    .eligibility-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+    }
+    @media (max-width: 660px) { .eligibility-grid { grid-template-columns: 1fr; } }
+
+    .elig-col {
+        background: var(--card-bg, #1a1a1a);
+        border-radius: 16px; padding: 32px 28px;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    .elig-col.elig-yes { border-color: rgba(40,167,69,0.2); }
+    .elig-col.elig-no  { border-color: rgba(255,50,50,0.2); }
+
+    .elig-head { font-size: 1rem; font-weight: 800; margin: 0 0 20px; }
+    .elig-head.yes { color: #48bb78; }
+    .elig-head.no  { color: #ff6666; }
+
+    .elig-list {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: 12px;
+    }
+    .elig-list li {
+        color: var(--text-sub, rgba(255,255,255,0.65));
+        font-size: 0.88rem; line-height: 1.5;
+        padding-left: 18px; position: relative;
+    }
+    .elig-col.elig-yes .elig-list li::before {
+        content: '▸'; color: #48bb78;
+        position: absolute; left: 0;
+    }
+    .elig-col.elig-no .elig-list li::before {
+        content: '▸'; color: #ff6666;
+        position: absolute; left: 0;
+    }
+    .elig-list li strong { color: var(--text-main, #fff); }
+
+</style>
+
+<div class="home-wrapper">
+
+    <div style="position: relative; overflow: hidden; background: radial-gradient(ellipse at center, #1a0000 0%, #000000 100%); padding: 120px 20px; text-align: center;" id="waves-container">
+        <!-- OGL Animated Waves Canvas will be attached here -->
+
+        <div style="position: relative; z-index: 2; pointer-events: none;">
+            <div class="emergency-tag" style="pointer-events: auto;"><span class="emergency-dot"></span> Live Donor Network</div>
+            <h1 style="font-size: 4.5rem; font-weight: 900; margin-bottom: 20px; color: #ffffff !important; text-shadow: 0 0 30px rgba(255,0,0,0.4); letter-spacing: -1px;">Every Drop is a <span style="background: linear-gradient(to right, #ff3333, #ff0000); -webkit-background-clip: text; color: transparent;">Lifeline</span></h1>
+            <p style="font-size: 1.25rem; opacity: 0.8; max-width: 700px; margin: 0 auto 50px; color: #cccccc !important; font-weight: 300;">Find verified donors in your hometown instantly.</p>
+
+            <div class="search-container" style="pointer-events: auto;">
+                <form action="{% url 'search_blood' %}" method="GET"
+                      style="display: grid;
+                             grid-template-columns: auto 1fr;
+                             gap: 50px;
+                             align-items: center;">
+
+                    <!-- ===== BLOOD GROUP FLOATING BUBBLES (Vertical Grid Sidebar) ===== -->
+                    <div style="border-right: 1px solid rgba(255, 0, 0, 0.2); padding-right: 50px;">
+                        <span class="bg-picker-label">🩸 Blood Group</span>
+                        <!-- Hidden input carries the selected value on submit -->
+                        <input type="hidden" name="blood_group" id="bg-hidden" value="">
+                        <div class="bg-bubbles-wrap" id="bg-bubbles">
+                            <button type="button" class="bg-bubble bg-selected" data-val=""><span>ALL</span></button>
+                            <button type="button" class="bg-bubble" data-val="A+"><span>A+</span></button>
+                            <button type="button" class="bg-bubble" data-val="A-"><span>A−</span></button>
+                            <button type="button" class="bg-bubble" data-val="B+"><span>B+</span></button>
+                            <button type="button" class="bg-bubble" data-val="B-"><span>B−</span></button>
+                            <button type="button" class="bg-bubble" data-val="O+"><span>O+</span></button>
+                            <button type="button" class="bg-bubble" data-val="O-"><span>O−</span></button>
+                            <button type="button" class="bg-bubble" data-val="AB+"><span>AB+</span></button>
+                            <button type="button" class="bg-bubble" data-val="AB-"><span>AB−</span></button>
+                        </div>
+                    </div>
+
+                    <!-- ===== Right Side: Location & Submit ===== -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <!-- District -->
+                        <div>
+                            <label class="form-label-small">District</label>
+                            <input type="text" name="district" placeholder="Enter District" class="home-search-input">
+                        </div>
+
+                        <!-- City -->
+                        <div>
+                            <label class="form-label-small">City</label>
+                            <input type="text" name="city" placeholder="Enter City" class="home-search-input">
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" class="find-btn" style="margin-top: 10px;">
+                            <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                Find Donors
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: linear-gradient(90deg, #050505, #110000, #050505); border-top: 1px solid rgba(255,0,0,0.1); border-bottom: 1px solid rgba(255,0,0,0.1); padding: 50px 0; position: relative; z-index: 2; box-shadow: 0 -10px 40px rgba(0,0,0,0.5);">
+        <div style="max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center;">
+            <div style="transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <h4 style="color: #ff0000 !important; font-size: 2.8rem; margin: 0; font-weight: 900; text-shadow: 0 0 20px rgba(255, 0, 0, 0.4);">{{ total_donors|default:"100" }}<span style="color:#ff6666">+</span></h4>
+                <p style="color: #888; font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; margin-top: 8px;">ACTIVE DONORS</p>
+            </div>
+            <div style="border-left: 1px solid rgba(255,0,0,0.2); border-right: 1px solid rgba(255,0,0,0.2); transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <h4 style="color: #ff0000 !important; font-size: 2.8rem; margin: 0; font-weight: 900; text-shadow: 0 0 20px rgba(255, 0, 0, 0.4);">Verified</h4>
+                <p style="color: #888; font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; margin-top: 8px;">SECURE CONTACT</p>
+            </div>
+            <div style="transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <h4 style="color: #ff0000 !important; font-size: 2.8rem; margin: 0; font-weight: 900; text-shadow: 0 0 20px rgba(255, 0, 0, 0.4);">100%</h4>
+                <p style="color: #888; font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; margin-top: 8px;">FREE SERVICE</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="max-width: 1200px; margin: 60px auto; padding: 0 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 50px; border-bottom: 1px solid rgba(255,0,0,0.2); padding-bottom: 20px;">
+            <h2 style="font-weight: 900; font-size: 2.5rem; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                <span style="width: 8px; height: 35px; background: #ff0000; border-radius: 4px; display: inline-block; box-shadow: 0 0 10px rgba(255,0,0,0.5);"></span>
+                Verified Donors Near You
+            </h2>
+            <a href="{% url 'search_blood' %}" style="color: #ff6666; text-decoration: none; font-weight: 800; border: 1px solid rgba(255,0,0,0.3); background: rgba(255,0,0,0.05); padding: 10px 24px; border-radius: 30px; text-transform: uppercase; font-size: 0.85rem; transition: all 0.3s; letter-spacing: 1px;" onmouseover="this.style.background='#ff0000'; this.style.color='#fff'; this.style.boxShadow='0 5px 15px rgba(255,0,0,0.4)';" onmouseout="this.style.background='rgba(255,0,0,0.05)'; this.style.color='#ff6666'; this.style.boxShadow='none';">VIEW ALL →</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
+            {% for donor in donors %}
+                {% include 'donor_card.html' %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 1 — WHY DONATE BLOOD?
+    ================================================================ -->
+    <div class="info-section-wrapper">
+        <div class="info-section-inner">
+
+            <div class="info-section-header">
+                <span class="info-accent-bar"></span>
+                <h2 class="info-section-title">Why Donate Blood?</h2>
+                <p class="info-section-sub">Every drop matters. Understand the lifesaving impact of a single donation.</p>
+            </div>
+
+            <div class="why-grid">
+
+                <div class="why-card">
+                    <div class="why-icon">🩸</div>
+                    <h3 class="why-title">Saves Up to 3 Lives</h3>
+                    <p class="why-body">A single whole blood donation can be separated into red cells, platelets, and plasma — each helping a different patient. One act. Three lives saved.</p>
+                </div>
+
+                <div class="why-card">
+                    <div class="why-icon">⏱️</div>
+                    <h3 class="why-title">Takes Only 10 Minutes</h3>
+                    <p class="why-body">The actual blood draw lasts about 10 minutes. Including registration and rest time, the full process takes under 45 minutes — less than a coffee break.</p>
+                </div>
+
+                <div class="why-card">
+                    <div class="why-icon">💪</div>
+                    <h3 class="why-title">Good for Your Health</h3>
+                    <p class="why-body">Regular donation helps reduce iron overload, stimulates new blood cell production, and provides a free mini health screening with every visit.</p>
+                </div>
+
+                <div class="why-card">
+                    <div class="why-icon">🌍</div>
+                    <h3 class="why-title">Always in Demand</h3>
+                    <p class="why-body">Blood cannot be manufactured. Hospitals need a constant fresh supply for surgeries, accidents, cancer treatment, and childbirth complications — every single day.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 2 — BLOOD TYPE COMPATIBILITY
+    ================================================================ -->
+    <div class="info-section-wrapper" style="background: var(--section-bg, #080808);">
+        <div class="info-section-inner">
+
+            <div class="info-section-header">
+                <span class="info-accent-bar"></span>
+                <h2 class="info-section-title">Blood Type Compatibility</h2>
+                <p class="info-section-sub">Know your type. Know who you can help.</p>
+            </div>
+
+            <div class="compat-grid">
+                {% for entry in blood_compat %}
+                <div class="compat-card">
+                    <div class="compat-badge">{{ entry.group }}</div>
+                    <div class="compat-row">
+                        <span class="compat-label">Can Give To</span>
+                        <span class="compat-value give">{{ entry.gives }}</span>
+                    </div>
+                    <div class="compat-row">
+                        <span class="compat-label">Can Receive From</span>
+                        <span class="compat-value recv">{{ entry.receives }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <p class="compat-note">* This chart refers to red blood cell transfusions. Platelet and plasma compatibility may differ. Always consult a medical professional.</p>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 3 — ABOUT BLOODLINK
+    ================================================================ -->
+    <div class="info-section-wrapper">
+        <div class="info-section-inner">
+
+            <div class="about-split">
+                <!-- Left: Text -->
+                <div class="about-text-col">
+                    <span class="about-eyebrow">🩺 About BloodLink</span>
+                    <h2 class="about-heading">Connecting Donors.<br>Saving Lives.</h2>
+                    <p class="about-body">
+                        <strong>BloodLink</strong> is a community-driven blood donor registry built to bridge the gap between people in need and willing donors — quickly, securely, and for free.
+                    </p>
+                    <p class="about-body">
+                        We believe no one should lose a loved one because a compatible donor couldn't be found in time. Our platform makes it simple to register as a donor, search by blood group and location, and connect directly within minutes.
+                    </p>
+                    <p class="about-body">
+                        Every registered donor has a verified profile. Every request is logged. And your privacy is always protected — contact details are only revealed after a donor approves a request.
+                    </p>
+                    <a href="{% url 'about' %}" class="about-cta-btn">Learn More About Us →</a>
+                </div>
+
+                <!-- Right: Feature pillars -->
+                <div class="about-pillars-col">
+                    <div class="pillar-card">
+                        <div class="pillar-icon">🔒</div>
+                        <div>
+                            <h4 class="pillar-title">Privacy First</h4>
+                            <p class="pillar-body">Phone numbers are never public. They're shared only when a donor personally accepts a request.</p>
+                        </div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-icon">⚡</div>
+                        <div>
+                            <h4 class="pillar-title">Fast Matching</h4>
+                            <p class="pillar-body">Search by blood group, district, and city to find the nearest available donor in seconds.</p>
+                        </div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-icon">✅</div>
+                        <div>
+                            <h4 class="pillar-title">Verified Donors</h4>
+                            <p class="pillar-body">Every donor completes a health screening and eligibility check before appearing in search results.</p>
+                        </div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-icon">🆓</div>
+                        <div>
+                            <h4 class="pillar-title">100% Free</h4>
+                            <p class="pillar-body">BloodLink is completely free for donors and seekers alike. No fees, no subscriptions, no ads.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 4 — ELIGIBILITY QUICK-CHECK
+    ================================================================ -->
+    <div class="info-section-wrapper" style="background: var(--section-bg, #080808);">
+        <div class="info-section-inner">
+            <div class="info-section-header">
+                <span class="info-accent-bar"></span>
+                <h2 class="info-section-title">Am I Eligible to Donate?</h2>
+                <p class="info-section-sub">A quick checklist before you enroll as a donor.</p>
+            </div>
+
+            <div class="eligibility-grid">
+                <div class="elig-col elig-yes">
+                    <h3 class="elig-head yes">✅ You CAN donate if you…</h3>
+                    <ul class="elig-list">
+                        <li>Are between <strong>18 and 65</strong> years old</li>
+                        <li>Weigh at least <strong>45 kg</strong></li>
+                        <li>Are in good general health today</li>
+                        <li>Have not donated blood in the last <strong>90 days</strong></li>
+                        <li>Have not had a tattoo or piercing in the last <strong>6 months</strong></li>
+                        <li>Are not on regular prescription medication</li>
+                    </ul>
+                </div>
+                <div class="elig-col elig-no">
+                    <h3 class="elig-head no">❌ Temporary restrictions apply if you…</h3>
+                    <ul class="elig-list">
+                        <li>Have a cold, flu, or active infection</li>
+                        <li>Are pregnant or recently gave birth</li>
+                        <li>Had a major surgery in the last <strong>6 months</strong></li>
+                        <li>Recently travelled to a malaria-prone area</li>
+                        <li>Are on antibiotics or blood-thinning medication</li>
+                        <li>Have a history of hepatitis B or HIV</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top: 40px;">
+                {% if user.is_authenticated %}
+                <a href="{% url 'register' %}" class="about-cta-btn">Become a Donor Today →</a>
+                {% else %}
+                <a href="{% url 'signup' %}" class="about-cta-btn">Sign Up &amp; Save Lives →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* ---- Blood Group Bubble Picker Logic ---- */
+    (function () {
+        const bubbles  = document.querySelectorAll('#bg-bubbles .bg-bubble');
+        const hidden   = document.getElementById('bg-hidden');
+
+        bubbles.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                bubbles.forEach(function (b) { b.classList.remove('bg-selected'); });
+                btn.classList.add('bg-selected');
+                hidden.value = btn.dataset.val;
+            });
+        });
+    })();
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('waves-container');
+        if(!container) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.zIndex = '1';
+        canvas.style.pointerEvents = 'none';
+        container.insertBefore(canvas, container.firstChild);
+
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let drops = [];
+
+        function resize() {
+            width = container.offsetWidth;
+            height = container.offsetHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Re-generate drops density based on new width
+            const targetDropCount = Math.floor(width / 3.5); // Density control
+            
+            if (drops.length < targetDropCount) {
+                for(let i = drops.length; i < targetDropCount; i++) {
+                    createDrop(true);
+                }
+            } else if (drops.length > targetDropCount) {
+                drops.splice(targetDropCount);
+            }
+        }
+        
+        function createDrop(randomY = false) {
+            const z = Math.random(); // Depth factor 0 (far) to 1 (near)
+            
+            const drop = {
+                x: Math.random() * width,
+                y: randomY ? Math.random() * height : -100,
+                z: z,
+                speed: 3 + z * 10, // Nearer drops fall faster
+                length: 15 + z * 35, // Nearer drops look longer due to motion blur
+                thickness: 0.6 + z * 2.8, // Nearer drops are thicker
+                opacity: 0.2 + z * 0.8, // Nearer drops are more opaque
+                color: Math.random() > 0.8 ? '255, 60, 60' : '200, 0, 0' // Mix of bright red and deep crimson
+            };
+            
+            if (randomY) {
+                drops.push(drop);
+            } else {
+                return drop;
+            }
+        }
+
+        window.addEventListener('resize', resize);
+        
+        // Initial setup
+        width = container.offsetWidth;
+        height = container.offsetHeight;
+        canvas.width = width;
+        canvas.height = height;
+        
+        for(let i = 0; i < Math.floor(width / 3.5); i++) {
+            createDrop(true);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Subtle glow effect
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(255, 0, 0, 0.4)';
+            
+            for(let i = 0; i < drops.length; i++) {
+                const drop = drops[i];
+                
+                ctx.beginPath();
+                ctx.moveTo(drop.x, drop.y);
+                ctx.lineTo(drop.x, drop.y + drop.length);
+                
+                // Color gradient for the drop simulating motion blur (dark tail)
+                const grad = ctx.createLinearGradient(drop.x, drop.y, drop.x, drop.y + drop.length);
+                grad.addColorStop(0, `rgba(${drop.color}, 0)`);
+                grad.addColorStop(1, `rgba(${drop.color}, ${drop.opacity})`);
+                
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = drop.thickness;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                drop.y += drop.speed;
+
+                // Reset drop when it reaches bottom
+                if(drop.y > height + 50) {
+                    drops[i] = createDrop(false);
+                    drops[i].x = Math.random() * width; // Distribute horizontally
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    function sendWhatsApp(event, donorId, phone, donorName, bloodGroup) {
+        // This targets the ID you set in donor_card.html
+        const hospitalField = document.getElementById('hosp_' + donorId);
+
+        if (!hospitalField) {
+            console.error("Input field not found for ID: hosp_" + donorId);
+            return;
+        }
+
+        const hospitalName = hospitalField.value.trim();
+
+        if (!hospitalName) {
+            alert("Please enter the Hospital Name first!");
+            event.preventDefault();
+            return;
+        }
+
+        let cleanBloodGroup = decodeURIComponent(bloodGroup);
+        const mapLink = "http://google.com/maps?q=" + encodeURIComponent(hospitalName);
+
+        const message = `🚨 *URGENT BLOOD REQUEST*\n\n` +
+                        `Hello ${donorName},\n\n` +
+                        `We need *${cleanBloodGroup}* blood urgently at *${hospitalName}*.\n\n` +
+                        `📍 *Location:* ${mapLink}\n\n` +
+                        `Are you available to help?`;
+
+        const whatsappUrl = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, '_blank');
+        event.preventDefault();
+    }
+</script>
+{% endblock %}

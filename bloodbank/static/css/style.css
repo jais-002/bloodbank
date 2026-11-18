@@ -1,0 +1,72 @@
+/* General reset */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+/* Red Header Section */
+.header {
+    background-color: #b30000;
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header .logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.header nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+.header nav a:hover {
+    text-decoration: underline;
+}
+
+/* Info Cards Section */
+.info {
+    display: flex;
+    justify-content: space-around;
+    padding: 40px 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    width: 30%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.card h3 {
+    color: #b30000;
+}
+
+/* Table Styling */
+table th {
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Footer */
+.footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 30px;
+}

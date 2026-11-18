@@ -1,0 +1,629 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — {{ user_obj.username }} | Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary:    #080b10;
+            --bg-secondary:  #0d1117;
+            --bg-card:       #111620;
+            --bg-card-hover: #161d2b;
+            --border:        rgba(255,255,255,0.07);
+            --border-hover:  rgba(220,53,69,0.4);
+            --accent:        #dc3545;
+            --accent-glow:   rgba(220,53,69,0.25);
+            --accent-gold:   #f5a623;
+            --accent-green:  #22c55e;
+            --accent-cyan:   #22d3ee;
+            --text-primary:  #e8eaf0;
+            --text-secondary:#8892a4;
+            --text-muted:    #4b5563;
+            --success:       #22c55e;
+            --danger:        #ef4444;
+            --warning:       #f59e0b;
+            --info:          #22d3ee;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(220,53,69,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(220,53,69,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* =================== LAYOUT =================== */
+        .admin-layout { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+        /* =================== SIDEBAR =================== */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .sidebar-logo { padding: 28px 24px 20px; border-bottom: 1px solid var(--border); }
+        .sidebar-logo .logo-icon { font-size: 28px; filter: drop-shadow(0 0 8px rgba(220,53,69,0.6)); }
+        .sidebar-logo h1 { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 4px; }
+        .sidebar-logo h1 span { color: var(--accent); }
+        .admin-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(220,53,69,0.15); border: 1px solid rgba(220,53,69,0.3);
+            color: var(--accent); font-size: 10px; font-weight: 700;
+            padding: 2px 8px; border-radius: 20px; margin-top: 6px;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .sidebar-nav { padding: 20px 12px; flex: 1; }
+        .nav-section-label { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.2s ease; margin-bottom: 2px; }
+        .sidebar-link:hover { background: var(--bg-card); color: var(--text-primary); }
+        .sidebar-link.active { background: rgba(220,53,69,0.12); color: var(--accent); border-left: 3px solid var(--accent); }
+        .sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+        .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; background: var(--bg-card); }
+        .sidebar-user .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #7f1d1d); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: white; flex-shrink: 0; }
+        .sidebar-user .user-info .name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .sidebar-user .user-info .role { font-size: 11px; color: var(--accent); font-weight: 600; }
+
+        /* =================== MAIN =================== */
+        .main-content { flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 36px; background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
+        }
+        .topbar-title h2 { font-size: 18px; font-weight: 700; }
+        .topbar-title p { font-size: 12px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+        .topbar-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
+        .btn-ghost:hover { border-color: var(--border-hover); color: var(--text-primary); }
+        .btn-danger-sm { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); }
+        .btn-danger-sm:hover { background: rgba(239,68,68,0.2); }
+        .btn-success-sm { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--success); }
+        .btn-success-sm:hover { background: rgba(34,197,94,0.2); }
+
+        .page-body { padding: 32px 36px; flex: 1; }
+
+        /* =================== PROFILE HERO =================== */
+        .profile-hero {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(220,53,69,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .profile-avatar-large {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            border: 3px solid rgba(220,53,69,0.4);
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 0 24px rgba(220,53,69,0.2);
+        }
+
+        .profile-avatar-placeholder {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7f1d1d, var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            font-weight: 900;
+            color: white;
+            flex-shrink: 0;
+            border: 3px solid rgba(220,53,69,0.4);
+            box-shadow: 0 0 24px rgba(220,53,69,0.2);
+        }
+
+        .profile-hero-info { flex: 1; }
+        .profile-hero-info h2 { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+        .profile-hero-info .profile-username { font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
+
+        .hero-tags { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+        .hero-tag {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .hero-tag.active   { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: var(--success); }
+        .hero-tag.blocked  { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); }
+        .hero-tag.superuser{ background: rgba(245,166,35,0.12); border: 1px solid rgba(245,166,35,0.3); color: var(--accent-gold); }
+        .hero-tag.donor    { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.3); color: var(--accent-cyan); }
+        .hero-tag.no-donor { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-muted); }
+        .hero-tag.emergency{ background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,69,0.3); color: var(--danger); }
+
+        .profile-hero-actions { display: flex; flex-direction: column; gap: 8px; }
+
+        /* =================== TABS =================== */
+        .tabs-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover { color: var(--text-primary); }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* =================== DETAIL CARDS =================== */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .detail-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: border-color 0.2s ease;
+        }
+
+        .detail-card:hover { border-color: var(--border-hover); }
+
+        .detail-card-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .field-row:last-child { border-bottom: none; }
+
+        .field-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .field-value {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: right;
+            max-width: 65%;
+            word-break: break-word;
+        }
+
+        .field-value.mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+
+        .blood-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(220,53,69,0.15);
+            border: 1px solid rgba(220,53,69,0.4);
+            color: var(--accent);
+            font-size: 16px;
+            font-weight: 900;
+            padding: 4px 14px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .yes-badge { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--success); padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+        .no-badge  { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-muted); padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+
+        /* No donor state */
+        .no-donor-panel {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .no-donor-panel .nd-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+        .no-donor-panel p { color: var(--text-secondary); font-size: 14px; }
+
+        /* Toast */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 14px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: slideIn 0.3s ease; }
+        .toast.success { background: rgba(34,197,94,0.9); border: 1px solid rgba(34,197,94,0.5); }
+        .toast.error   { background: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.5); }
+        .toast.info    { background: rgba(34,211,238,0.9); border: 1px solid rgba(34,211,238,0.5); }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+{% if messages %}
+<div class="toast-container">
+    {% for message in messages %}
+    <div class="toast {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="admin-layout">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🩸</div>
+            <h1>Blood <span>Bank</span></h1>
+            <div class="admin-badge">⚡ Command Center</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Navigation</div>
+            <a href="{% url 'admin_dashboard' %}" class="sidebar-link active">
+                <span>🛡️</span> User Management
+            </a>
+            <a href="{% url 'index' %}" class="sidebar-link">
+                <span>🏠</span> Main Site
+            </a>
+            <a href="{% url 'search_blood' %}" class="sidebar-link">
+                <span>🔍</span> Search Donors
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="avatar">{{ request.user.username|first|upper }}</div>
+                <div class="user-info">
+                    <div class="name">{{ request.user.username|title }}</div>
+                    <div class="role">Superuser</div>
+                </div>
+            </div>
+            <form action="{% url 'logout' %}" method="post" style="margin-top: 10px;">
+                {% csrf_token %}
+                <button type="submit" class="topbar-link btn-ghost" style="width:100%; justify-content:center; cursor:pointer; font-family:inherit;">
+                    🚪 Logout
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN ========== -->
+    <div class="main-content">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-title">
+                <h2>User Profile</h2>
+                <p>admin@bloodbank > users > {{ user_obj.username }}</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                {% if not user_obj.is_superuser %}
+                    {% if user_obj.is_active %}
+                        <a href="{% url 'admin_reject_user' user_obj.id %}"
+                           class="topbar-link btn-danger-sm"
+                           onclick="return confirm('Block {{ user_obj.username }}?');">
+                            🚫 Block User
+                        </a>
+                    {% else %}
+                        <a href="{% url 'admin_accept_user' user_obj.id %}" class="topbar-link btn-success-sm">
+                            ✅ Activate User
+                        </a>
+                    {% endif %}
+                {% endif %}
+                <a href="{% url 'admin_dashboard' %}" class="topbar-link btn-ghost">← Back</a>
+            </div>
+        </div>
+
+        <!-- Profile Body -->
+        <div class="page-body">
+
+            <!-- HERO -->
+            <div class="profile-hero">
+                {% if donor and donor.profile_pic %}
+                    <img src="{{ donor.profile_pic.url }}" alt="Profile" class="profile-avatar-large">
+                {% else %}
+                    <div class="profile-avatar-placeholder">
+                        {{ user_obj.username|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div class="profile-hero-info">
+                    <h2>
+                        {% if donor %}{{ donor.name }}{% else %}{{ user_obj.username|title }}{% endif %}
+                    </h2>
+                    <div class="profile-username">@{{ user_obj.username }} · #{{ user_obj.id }}</div>
+
+                    <div class="hero-tags">
+                        {% if user_obj.is_superuser %}
+                            <span class="hero-tag superuser">⭐ Superuser</span>
+                        {% elif user_obj.is_active %}
+                            <span class="hero-tag active">✅ Active</span>
+                        {% else %}
+                            <span class="hero-tag blocked">🚫 Blocked</span>
+                        {% endif %}
+
+                        {% if donor %}
+                            <span class="hero-tag donor">🩸 {{ donor.blood_group }} Donor</span>
+                            {% if donor.is_emergency_available %}
+                                <span class="hero-tag emergency">🚨 Emergency</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="hero-tag no-donor">No Donor Profile</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================== TABS =================== -->
+            <div class="tabs-bar">
+                <button class="tab-btn active" onclick="switchTab('user-tab', this)">
+                    👤 Account Details
+                </button>
+                <button class="tab-btn" onclick="switchTab('donor-tab', this)">
+                    🩸 Donor Profile
+                    {% if not donor %}<span style="font-size:10px;opacity:0.5;">(none)</span>{% endif %}
+                </button>
+            </div>
+
+            <!-- ===== TAB 1: USER INFO ===== -->
+            <div id="user-tab" class="tab-panel active">
+                <div class="detail-grid">
+
+                    <!-- Account Info card -->
+                    <div class="detail-card">
+                        <div class="detail-card-title">👤 Account Information</div>
+                        <div class="field-row">
+                            <span class="field-label">User ID</span>
+                            <span class="field-value mono">#{{ user_obj.id }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Username</span>
+                            <span class="field-value">{{ user_obj.username }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Email</span>
+                            <span class="field-value mono" style="font-size:11px;">{{ user_obj.email|default:"—" }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Date Joined</span>
+                            <span class="field-value mono">{{ user_obj.date_joined|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Last Login</span>
+                            <span class="field-value mono">{{ user_obj.last_login|date:"M d, Y H:i"|default:"Never" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Permissions card -->
+                    <div class="detail-card">
+                        <div class="detail-card-title">🔐 Permissions & Status</div>
+                        <div class="field-row">
+                            <span class="field-label">Is Active</span>
+                            <span class="field-value">
+                                {% if user_obj.is_active %}<span class="yes-badge">YES</span>{% else %}<span class="no-badge">NO</span>{% endif %}
+                            </span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Is Staff</span>
+                            <span class="field-value">
+                                {% if user_obj.is_staff %}<span class="yes-badge">YES</span>{% else %}<span class="no-badge">NO</span>{% endif %}
+                            </span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Is Superuser</span>
+                            <span class="field-value">
+                                {% if user_obj.is_superuser %}<span class="yes-badge">YES</span>{% else %}<span class="no-badge">NO</span>{% endif %}
+                            </span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Has Donor Profile</span>
+                            <span class="field-value">
+                                {% if donor %}<span class="yes-badge">YES</span>{% else %}<span class="no-badge">NO</span>{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ===== TAB 2: DONOR INFO ===== -->
+            <div id="donor-tab" class="tab-panel">
+                {% if donor %}
+                <div class="detail-grid">
+
+                    <!-- Personal Info -->
+                    <div class="detail-card">
+                        <div class="detail-card-title">🧬 Personal Information</div>
+                        <div class="field-row">
+                            <span class="field-label">Full Name</span>
+                            <span class="field-value">{{ donor.name }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Age</span>
+                            <span class="field-value">{{ donor.age }} yrs</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Gender</span>
+                            <span class="field-value">{{ donor.gender }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Phone</span>
+                            <span class="field-value mono">{{ donor.phone|default:"—" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Blood Info -->
+                    <div class="detail-card">
+                        <div class="detail-card-title">🩸 Blood Information</div>
+                        <div class="field-row">
+                            <span class="field-label">Blood Group</span>
+                            <span class="field-value"><span class="blood-badge">{{ donor.blood_group }}</span></span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Last Donation</span>
+                            <span class="field-value mono">{{ donor.last_donation_date|default:"Never" }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Can Donate Now</span>
+                            <span class="field-value">
+                                {% if donor.can_donate %}<span class="yes-badge">YES</span>{% else %}<span class="no-badge">90-day wait</span>{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Physical Metrics -->
+                    <div class="detail-card">
+                        <div class="detail-card-title">📊 Physical Metrics</div>
+                        <div class="field-row">
+                            <span class="field-label">Weight</span>
+                            <span class="field-value">{{ donor.weight|default:"—" }} kg</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Height</span>
+                            <span class="field-value">{{ donor.height|default:"—" }} cm</span>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="detail-card">
+                        <div class="detail-card-title">📍 Location</div>
+                        <div class="field-row">
+                            <span class="field-label">City</span>
+                            <span class="field-value">{{ donor.city }}</span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">District</span>
+                            <span class="field-value">{{ donor.district }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="detail-card">
+                        <div class="detail-card-title">🔋 Donor Status</div>
+                        <div class="field-row">
+                            <span class="field-label">Available for Donation</span>
+                            <span class="field-value">
+                                {% if donor.is_available %}<span class="yes-badge">YES</span>{% else %}<span class="no-badge">NO</span>{% endif %}
+                            </span>
+                        </div>
+                        <div class="field-row">
+                            <span class="field-label">Emergency Availability</span>
+                            <span class="field-value">
+                                {% if donor.is_emergency_available %}<span class="yes-badge">YES</span>{% else %}<span class="no-badge">NO</span>{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+                {% else %}
+                <div class="no-donor-panel">
+                    <div class="nd-icon">🩸</div>
+                    <p><strong>{{ user_obj.username }}</strong> has not registered as a donor yet.</p>
+                    <p style="margin-top:6px; color: var(--text-muted); font-size:12px;">No donor profile found in the database.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div><!-- /page-body -->
+    </div><!-- /main-content -->
+</div><!-- /admin-layout -->
+
+<script>
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // Auto-dismiss toasts
+    setTimeout(() => {
+        document.querySelectorAll('.toast').forEach(t => {
+            t.style.opacity = '0';
+            t.style.transform = 'translateX(120%)';
+            t.style.transition = 'all 0.4s ease';
+            setTimeout(() => t.remove(), 400);
+        });
+    }, 4000);
+</script>
+
+</body>
+</html>

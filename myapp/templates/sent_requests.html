@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    /* ... existing styles ... */
+
+    /* 1. CURVE THE OUTER CONTAINER */
+    .auth-card-unified {
+        border-radius: 25px !important;
+        overflow: hidden;
+    }
+
+    /* 2. CURVE THE TABLE AND ITS HEADERS */
+    table {
+        border-radius: 15px !important;
+        overflow: hidden;
+        border: 1px solid #333 !important;
+    }
+
+    thead tr:first-child th:first-child { border-top-left-radius: 15px; }
+    thead tr:first-child th:last-child  { border-top-right-radius: 15px; }
+
+    /* --- Clear History Button --- */
+    .clear-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 20px;
+        background: rgba(179, 0, 0, 0.12);
+        border: 1px solid rgba(179, 0, 0, 0.35);
+        color: #ff6666;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-family: inherit;
+    }
+    .clear-btn:hover {
+        background: rgba(179, 0, 0, 0.30);
+        border-color: rgba(255, 60, 60, 0.6);
+        color: #fff;
+        box-shadow: 0 0 14px rgba(200, 0, 0, 0.3);
+        transform: translateY(-1px);
+    }
+
+    /* --- Confirmation Modal --- */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(6px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+        background: #1a1a1a;
+        border: 1px solid rgba(179, 0, 0, 0.3);
+        border-radius: 20px;
+        padding: 40px 36px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(179,0,0,0.05);
+        animation: modal-in 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes modal-in {
+        from { opacity: 0; transform: scale(0.88); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+    .modal-icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .modal-title { color: #fff; font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; }
+    .modal-sub   { color: #888; font-size: 0.88rem; line-height: 1.6; margin-bottom: 28px; }
+    .modal-actions { display: flex; gap: 12px; }
+    .modal-cancel {
+        flex: 1; padding: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid #333;
+        color: #aaa;
+        border-radius: 10px; font-weight: 700;
+        cursor: pointer; font-family: inherit;
+        transition: all 0.2s;
+    }
+    .modal-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .modal-confirm-form { flex: 1; margin: 0; }
+    .modal-confirm-btn {
+        width: 100%; padding: 12px;
+        background: linear-gradient(135deg, #b30000, #ff3333);
+        border: none;
+        color: #fff;
+        border-radius: 10px; font-weight: 800;
+        cursor: pointer; font-family: inherit;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        box-shadow: 0 4px 14px rgba(200,0,0,0.35);
+    }
+    .modal-confirm-btn:hover {
+        box-shadow: 0 6px 20px rgba(255,0,0,0.5);
+        transform: translateY(-1px);
+    }
+</style>
+
+<div class="auth-card-unified" style="max-width: 950px; margin: 30px auto; padding: 20px;">
+
+    <!-- Page header row: title + clear button -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 30px;">
+        <h2 style="color: #b30000; font-weight: 800; font-size: 2.2rem; margin: 0;">
+            My Sent Blood Requests
+        </h2>
+
+        {% if sent_requests %}
+        <button class="clear-btn" onclick="document.getElementById('clearModal').classList.add('active')">
+            🗑️ Clear History
+        </button>
+        {% endif %}
+    </div>
+
+    {% if sent_requests %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; color: white; background: #1a1a1a; border-radius: 15px; border: 1px solid #333;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #333;">
+                        <th style="padding: 15px; opacity: 0.7; font-size: 0.8rem; text-transform: uppercase;">Target Donor</th>
+                        <th style="padding: 15px; opacity: 0.7; font-size: 0.8rem; text-transform: uppercase;">Blood Group</th>
+                        <th style="padding: 15px; opacity: 0.7; font-size: 0.8rem; text-transform: uppercase;">Date Sent</th>
+                        <th style="padding: 15px; opacity: 0.7; font-size: 0.8rem; text-transform: uppercase;">Current Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in sent_requests %}
+                    <tr style="border-bottom: 1px solid #222; transition: 0.3s; background: transparent;">
+
+                        <td style="padding: 20px;">
+                            <strong style="font-size: 1.1rem; color: #fff;">{{ req.donor.name|title }}</strong>
+                            <p style="font-size: 0.7rem; color: #888; margin: 0;">ID: #{{ req.id }}</p>
+                        </td>
+
+                        <td style="padding: 20px;">
+                            <span style="background: #b30000; color: white; padding: 4px 10px; border-radius: 6px; font-weight: 800;">
+                                {{ req.donor.blood_group }}
+                            </span>
+                        </td>
+
+                        <td style="padding: 20px; opacity: 0.8;">{{ req.created_at|date:"M d, Y" }}</td>
+
+                        <td style="padding: 15px;">
+                            {% if req.status == 'Approved' or req.status == 'Accepted' %}
+                                <span style="color: #28a745; font-weight: 800; display: block; margin-bottom: 5px;">✅ APPROVED</span>
+
+                                <div style="padding: 10px; background: rgba(40, 167, 69, 0.1); border-radius: 8px; border: 1px solid rgba(40, 167, 69, 0.2);">
+                                    <div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Contact Number</div>
+                                    <strong style="color: #fff; font-size: 1.1rem;">{{ req.donor.phone }}</strong>
+
+                                    <div style="display: flex; gap: 10px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+                                        <button onclick="sendWhatsApp(event, '{{ req.donor.phone }}', '{{ req.donor.name }}', '{{ req.donor.blood_group }}', '{{ req.hospital_name|default:'the hospital' }}')"
+                                                style="flex: 1; background: #25D366; color: white; border: none; padding: 8px; border-radius: 5px; font-size: 0.7rem; font-weight: 800; cursor: pointer; text-transform: uppercase;">
+                                            💬 WhatsApp
+                                        </button>
+
+                                        <a href="tel:{{ req.donor.phone }}" style="flex: 1; border: 1px solid #28a745; color: #28a745; text-decoration: none; padding: 8px; border-radius: 5px; font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase;">
+                                            📞 Call
+                                        </a>
+                                    </div>
+                                </div>
+
+                            {% elif req.status == 'Pending' %}
+                                <div style="text-align: center; padding: 10px; border: 1px dashed #ffc107; border-radius: 8px;">
+                                    <span style="color: #ffc107; font-weight: 800;">⏳ PENDING</span>
+                                    <p style="font-size: 0.7rem; color: #888; margin-top: 4px;">Waiting for Donor Approval</p>
+                                    <p style="font-size: 0.65rem; color: rgba(255,193,7,0.5); margin-top: 2px;">
+                                        ⏱ Auto-expires 24 hrs after sending
+                                    </p>
+                                </div>
+
+                            {% elif req.status == 'Donated' %}
+                                <span style="color: #007bff; font-weight: 800;">🩸 DONATION COMPLETE</span>
+                                <p style="font-size: 0.7rem; color: #28a745; margin-top: 4px;">Thank you for saving a life!</p>
+
+                            {% else %}
+                                <span style="color: #ff4444; font-weight: 800; border: 1px solid rgba(255,68,68,0.3); padding: 5px 10px; border-radius: 5px;">
+                                    {{ req.status|upper }}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 80px 20px;">
+            <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">📩</div>
+            <p style="font-size: 1.2rem; color: #888; margin-bottom: 25px;">No requests sent yet.</p>
+            <a href="{% url 'search_blood' %}" style="padding: 12px 30px; background: #b30000; color: white; text-decoration: none; border-radius: 8px; font-weight: 800;">
+                Find Donors
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function sendWhatsApp(event, phone, donorName, bloodGroup, hospitalName) {
+        const mapLink = "https://www.google.com/maps/search/" + encodeURIComponent(hospitalName);
+
+        const message = `🚨 *BLOOD REQUEST FOLLOW-UP*\n\n` +
+                        `Hello ${donorName},\n\n` +
+                        `I am following up on my request for *${bloodGroup}* blood at *${hospitalName}*.\n\n` +
+                        `📍 *Location:* ${mapLink}\n\n` +
+                        `Are you on your way?`;
+
+        const whatsappUrl = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        event.preventDefault();
+    }
+</script>
+
+<!-- ===== CLEAR HISTORY CONFIRMATION MODAL ===== -->
+<div class="modal-overlay" id="clearModal">
+    <div class="modal-box">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Clear All Request History?</div>
+        <p class="modal-sub">
+            This will permanently remove <strong style="color:#ff6666">all</strong> your blood requests —
+            including <strong style="color:#ff6666">Pending, Approved, Rejected, Donated,</strong> and
+            <strong style="color:#ff6666">Cancelled</strong> entries.<br><br>
+            <em>This action cannot be undone.</em>
+        </p>
+        <div class="modal-actions">
+            <button class="modal-cancel"
+                    onclick="document.getElementById('clearModal').classList.remove('active')">
+                ✖ Cancel
+            </button>
+            <form class="modal-confirm-form"
+                  method="POST"
+                  action="{% url 'clear_request_history' %}">
+                {% csrf_token %}
+                <button type="submit" class="modal-confirm-btn">🗑️ Yes, Clear</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Close modal when clicking the dark backdrop -->
+<script>
+    document.getElementById('clearModal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
+</script>
+
+{% endblock %}

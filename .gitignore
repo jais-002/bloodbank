@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# PyCharm / IDE
+.idea/
+.vscode/
+
+# Environment secrets
+.env
+
+# SQLite database (optional: un-comment if you don't want local db committed)
+# db.sqlite3
+
+# Static collected
+staticfiles/

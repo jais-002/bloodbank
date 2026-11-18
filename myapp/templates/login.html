@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .auth-card {
+        background-color: var(--card-bg);
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .auth-input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 10px;
+        outline: none;
+        box-sizing: border-box;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #fcfcfc !important;
+        border: 2px solid #e2e8f0 !important;
+        color: #2d3748;
+    }
+
+    .auth-input:focus {
+        border-color: #b30000 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(179, 0, 0, 0.1) !important;
+    }
+
+    /* Dark Mode Support */
+    [data-theme="dark"] .auth-input {
+        background-color: #2d2d2d !important;
+        border: 2px solid #4a5568 !important;
+        color: #f7fafc;
+    }
+</style>
+
+<div style="background-color: var(--bg-color); min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div class="auth-card">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #b30000; font-size: 2.2rem; font-weight: 800; margin: 0;">Login</h2>
+            <p style="color: var(--text-main); opacity: 0.7; margin-top: 8px;">Access your donor portal</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div style="margin-bottom: 20px;">
+                <label style="color: var(--text-main); font-weight: 700; display: block; margin-bottom: 8px;">Username</label>
+                <input type="text" name="username" class="auth-input" placeholder="Enter username" required>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="color: var(--text-main); font-weight: 700; display: block; margin-bottom: 8px;">Password</label>
+                <input type="password" name="password" class="auth-input" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit"
+                    style="width: 100%; padding: 16px; background: #b30000; color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s;">
+                Sign In
+            </button>
+        </form>
+
+        <div style="margin-top: 25px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <p style="color: var(--text-main); font-size: 0.95rem;">
+                New to BloodLink? <a href="{% url 'signup' %}" style="color: #b30000; text-decoration: none; font-weight: 800;">Join as a Donor</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,62 @@
+/* Styling specifically for the Registration/Login Form */
+.form-wrapper {
+    padding: 50px 20px;
+    background-color: #f4f4f4;
+    min-height: 80vh;
+}
+
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #343a40; /* Dark Grey theme */
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.form-container h2 {
+    text-align: center;
+    color: #ff4d4d;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background-color: #fff;
+    color: #333;
+    box-sizing: border-box; /* Prevents input from overflowing */
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background-color: #b30000; /* Blood Red */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #e60000;
+}

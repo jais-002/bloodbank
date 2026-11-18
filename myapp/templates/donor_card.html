@@ -1,0 +1,345 @@
+{% load static %}
+<style>
+/* ===================== DONOR CARD ===================== */
+.donor-card {
+    position: relative;
+    background: linear-gradient(160deg, rgba(20,0,0,0.75) 0%, rgba(10,10,10,0.85) 100%);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(180,0,0,0.2);
+    border-radius: 22px;
+    padding: 28px 22px 22px;
+    text-align: center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 360px;
+    box-shadow:
+        0 20px 50px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,60,60,0.08);
+    transition: transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275),
+                box-shadow 0.35s ease,
+                border-color 0.35s ease;
+    overflow: hidden;
+}
+
+/* Top red scan-line accent */
+.donor-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,40,40,0.7), transparent);
+    border-radius: 1px;
+}
+
+/* Glow burst on hover */
+.donor-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(200,0,0,0.12) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+.donor-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(255,50,50,0.4);
+    box-shadow:
+        0 30px 70px rgba(0,0,0,0.75),
+        0 0 30px rgba(200,0,0,0.18),
+        inset 0 1px 0 rgba(255,80,80,0.12);
+}
+.donor-card:hover::after { opacity: 1; }
+
+/* ---- Blood Group Badge ---- */
+.dc-blood-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #8b0000, #ff2222);
+    color: #fff;
+    font-weight: 900;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 16px rgba(220,0,0,0.55), 0 4px 10px rgba(0,0,0,0.4);
+    margin-bottom: 16px;
+    border: 1px solid rgba(255,80,80,0.35);
+    animation: badge-pulse 2.8s ease-in-out infinite;
+}
+@keyframes badge-pulse {
+    0%,100% { box-shadow: 0 0 14px rgba(220,0,0,0.5); }
+    50%      { box-shadow: 0 0 26px rgba(255,40,40,0.8); }
+}
+
+/* ---- Avatar Ring ---- */
+.dc-avatar-ring {
+    width: 94px;
+    height: 94px;
+    border-radius: 50%;
+    padding: 3px;
+    background: conic-gradient(#ff2222, #8b0000, #ff2222);
+    box-shadow: 0 0 18px rgba(200,0,0,0.4);
+    margin: 0 auto 16px;
+    animation: ring-spin 8s linear infinite;
+}
+@keyframes ring-spin {
+    from { background: conic-gradient(from 0deg, #ff2222, #8b0000, #ff2222); }
+    to   { background: conic-gradient(from 360deg, #ff2222, #8b0000, #ff2222); }
+}
+.dc-avatar-ring img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #111;
+    display: block;
+    border: 2px solid #0a0a0a;
+}
+
+/* ---- Name & Location ---- */
+.dc-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: #fff;
+    margin: 0 0 6px;
+    text-shadow: 0 0 12px rgba(255,60,60,0.2);
+}
+.dc-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 3px 10px;
+}
+
+/* ---- Divider ---- */
+.dc-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,40,40,0.2), transparent);
+    margin: 16px 0 14px;
+}
+
+/* ---- Action area inputs ---- */
+.dc-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,60,60,0.2) !important;
+    color: #fff !important;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 8px;
+    font-family: 'Inter','Segoe UI',sans-serif;
+}
+.dc-input::placeholder { color: rgba(255,255,255,0.3) !important; }
+.dc-input:focus {
+    border-color: rgba(255,60,60,0.5) !important;
+    box-shadow: 0 0 10px rgba(200,0,0,0.25) !important;
+}
+
+/* ---- Request Submit Button ---- */
+.dc-btn-request {
+    width: 100%;
+    background: linear-gradient(135deg, #b30000, #ff2020);
+    color: white;
+    padding: 11px;
+    border: 1px solid rgba(255,80,80,0.4);
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 4px;
+    box-sizing: border-box;
+    transition: all 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+    box-shadow: 0 6px 16px rgba(180,0,0,0.3);
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+}
+.dc-btn-request::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.18) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.dc-btn-request:hover::before { opacity: 1; }
+.dc-btn-request:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 28px rgba(220,0,0,0.5);
+    border-color: rgba(255,100,100,0.6);
+}
+
+/* ---- WhatsApp Button ---- */
+.dc-btn-whatsapp {
+    width: 100%;
+    background: linear-gradient(135deg, #128c3b, #25d366);
+    color: white;
+    padding: 12px;
+    border: 1px solid rgba(37,211,102,0.35);
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 16px rgba(37,211,102,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    letter-spacing: 0.5px;
+}
+.dc-btn-whatsapp:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(37,211,102,0.4);
+}
+
+/* ---- Pending Badge ---- */
+.dc-pending {
+    padding: 13px;
+    border-radius: 10px;
+    background: rgba(255,193,7,0.08);
+    border: 1px solid rgba(255,193,7,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #ffc107;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+/* ---- Login CTA ---- */
+.dc-btn-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: rgba(255,255,255,0.65);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    text-decoration: none !important;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+.dc-btn-login:hover {
+    background: rgba(180,0,0,0.15);
+    border-color: rgba(255,50,50,0.35);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(180,0,0,0.2);
+}
+</style>
+
+<div class="donor-card">
+
+    <!-- Top section: badge + avatar + name + city -->
+    <div>
+        <!-- Blood Group Badge -->
+        <div>
+            <span class="dc-blood-badge">🩸 {{ donor.blood_group }}</span>
+        </div>
+
+        <!-- Avatar with spinning ring -->
+        <div class="dc-avatar-ring">
+            <img src="{% if donor.profile_pic %}{{ donor.profile_pic.url }}{% else %}{% static 'images/default.png' %}{% endif %}"
+                 alt="{{ donor.name }}">
+        </div>
+
+        <!-- Name -->
+        <h3 class="dc-name">{{ donor.name|title }}</h3>
+
+        <!-- Location -->
+        <span class="dc-location">📍 {{ donor.city|title }}</span>
+    </div>
+
+    <!-- Divider -->
+    <div class="dc-divider"></div>
+
+    <!-- Action area — ALL existing logic preserved, only styling changed -->
+    <div style="width: 100%;">
+        {% if user.is_authenticated %}
+
+            {% if donor.my_request_status == 'Approved' %}
+            <!-- WhatsApp button (approved state) -->
+            <button class="dc-btn-whatsapp"
+                    onclick="sendWhatsApp(event, {{ donor.id }}, '{{ donor.phone }}', '{{ donor.name|title }}', '{{ donor.blood_group }}')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.115 1.523 5.843L0 24l6.335-1.502A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.373l-.36-.214-3.724.883.938-3.629-.235-.372A9.818 9.818 0 1112 21.818z"/>
+                </svg>
+                WHATSAPP
+            </button>
+
+            <!-- Hospital input (hidden, needed for sendWhatsApp) -->
+            <input type="text" id="hosp_{{ donor.id }}"
+                   placeholder="Enter Hospital Name"
+                   class="dc-input" style="margin-top: 8px;">
+
+            {% elif donor.my_request_status == 'Pending' %}
+            <!-- Pending state -->
+            <div class="dc-pending">⏳ Request Pending</div>
+
+            {% elif donor.my_request_status == 'Rejected' %}
+            <!-- Rejected within 24h cooldown — cannot re-request yet -->
+            <div style="padding: 13px; border-radius: 10px;
+                        background: rgba(255,50,50,0.07);
+                        border: 1px solid rgba(255,50,50,0.3);
+                        text-align: center;">
+                <span style="color: #ff4444; font-weight: 800; font-size: 0.82rem;
+                             letter-spacing: 0.5px;">❌ Request Rejected</span>
+                <p style="color: rgba(255,255,255,0.45); font-size: 0.7rem;
+                          margin: 6px 0 0; line-height: 1.5;">
+                    You may request again after <strong style="color:rgba(255,100,100,0.7);">24 hours</strong>
+                </p>
+            </div>
+
+            {% else %}
+            <!-- Send request form -->
+            <form action="{% url 'send_request' donor.id %}" method="POST"
+                  style="display: flex; flex-direction: column; width: 100%; margin: 0; padding: 0;">
+                {% csrf_token %}
+                <input type="text" name="hospital_name"
+                       placeholder="Hospital Name" required
+                       class="dc-input">
+                <input type="text" name="contact_number"
+                       placeholder="Phone Number" required
+                       class="dc-input">
+                <button type="submit" class="dc-btn-request">
+                    🩸 Request Contact
+                </button>
+            </form>
+            {% endif %}
+
+        {% else %}
+        <!-- Not logged in -->
+        <a href="{% url 'login' %}" class="dc-btn-login">
+            🔑 Login to Request
+        </a>
+        {% endif %}
+    </div>
+
+</div>
